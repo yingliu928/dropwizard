@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
-class Http2IntegrationTest extends AbstractHttp2Test {
+class   Http2IntegrationTest extends AbstractHttp2Test {
 
     final DropwizardAppExtension<Configuration> appRule = new DropwizardAppExtension<>(
         FakeApplication.class, ResourceHelpers.resourceFilePath("test-http2.yml"),

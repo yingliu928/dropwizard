@@ -3,6 +3,7 @@ package io.dropwizard.lifecycle;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.component.LifeCycle;
 
 import java.util.Arrays;
 import java.util.EventListener;
@@ -11,7 +12,38 @@ import java.util.stream.Collectors;
 
 public interface ServerLifecycleListener extends EventListener {
 
+    /**
+     * @see LifeCycle.Listener#lifeCycleStarted(LifeCycle)
+     */
     void serverStarted(Server server);
+
+    /**
+     * @see LifeCycle.Listener#lifeCycleStarting(LifeCycle)
+     * @since 2.2.0
+     */
+    default void serverStarting(Server event) {
+    }
+
+    /**
+     * @see LifeCycle.Listener#lifeCycleStopped(LifeCycle)
+     * @since 2.2.0
+     */
+    default void serverStopped(Server server) {
+    }
+
+    /**
+     * @see LifeCycle.Listener#lifeCycleStopping(LifeCycle)
+     * @since 2.2.0
+     */
+    default void serverStopping(Server event) {
+    }
+
+    /**
+     * @see LifeCycle.Listener#lifeCycleFailure(LifeCycle, Throwable)
+     * @since 2.2.0
+     */
+    default void serverFailure(Server event, Throwable cause) {
+    }
 
     /**
      * Return the local port of the first {@link ServerConnector} in the

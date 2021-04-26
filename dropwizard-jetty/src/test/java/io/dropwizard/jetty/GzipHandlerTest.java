@@ -44,10 +44,9 @@ class GzipHandlerTest {
         request.setHeader("Connection", "close");
         request.setURI("/banner");
 
-        gzipHandler.setExcludedAgentPatterns();
         gzipHandler.addIncludedMethods("POST");
         servletTester.addServlet(BannerServlet.class, "/banner");
-        servletTester.getContext().setGzipHandler(gzipHandler);
+        servletTester.getContext().insertHandler(gzipHandler);
         servletTester.start();
     }
 
@@ -100,7 +99,6 @@ class GzipHandlerTest {
         request.setHeader(HttpHeader.CONTENT_ENCODING.asString(), "gzip");
     }
 
-    @SuppressWarnings("serial")
     public static class BannerServlet extends HttpServlet {
 
         @Override

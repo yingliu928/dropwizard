@@ -1,9 +1,11 @@
 package io.dropwizard.jetty;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jetty9.InstrumentedConnectionFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.dropwizard.metrics.jetty10.InstrumentedConnectionFactory;
 import io.dropwizard.util.DataSize;
 import io.dropwizard.util.DataSizeUnit;
 import io.dropwizard.util.Duration;
@@ -563,11 +565,13 @@ public class HttpConnectorFactory implements ConnectorFactory {
     }
 
     @JsonProperty
+    @JsonSerialize(using = HttpComplianceSerializer.class)
     public HttpCompliance getHttpCompliance() {
         return httpCompliance;
     }
 
     @JsonProperty
+    @JsonDeserialize(using = HttpComplianceDeserializer.class)
     public void setHttpCompliance(HttpCompliance httpCompliance) {
         this.httpCompliance = httpCompliance;
     }
@@ -576,6 +580,7 @@ public class HttpConnectorFactory implements ConnectorFactory {
      * @since 2.0
      */
     @JsonProperty
+    @JsonSerialize(using = CookieComplianceSerializer.class)
     public CookieCompliance getRequestCookieCompliance() {
         return requestCookieCompliance;
     }
@@ -584,6 +589,7 @@ public class HttpConnectorFactory implements ConnectorFactory {
      * @since 2.0
      */
     @JsonProperty
+    @JsonDeserialize(using = CookieComplianceDeserializer.class)
     public void setRequestCookieCompliance(CookieCompliance requestCookieCompliance) {
         this.requestCookieCompliance = requestCookieCompliance;
     }
@@ -592,6 +598,7 @@ public class HttpConnectorFactory implements ConnectorFactory {
      * @since 2.0
      */
     @JsonProperty
+    @JsonSerialize(using = CookieComplianceSerializer.class)
     public CookieCompliance getResponseCookieCompliance() {
         return responseCookieCompliance;
     }
@@ -600,6 +607,7 @@ public class HttpConnectorFactory implements ConnectorFactory {
      * @since 2.0
      */
     @JsonProperty
+    @JsonDeserialize(using = CookieComplianceDeserializer.class)
     public void setResponseCookieCompliance(CookieCompliance responseCookieCompliance) {
         this.responseCookieCompliance = responseCookieCompliance;
     }
@@ -669,7 +677,7 @@ public class HttpConnectorFactory implements ConnectorFactory {
     }
 
     protected HttpConnectionFactory buildHttpConnectionFactory(HttpConfiguration httpConfig) {
-        final HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig, httpCompliance);
+        final HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig);
         httpConnectionFactory.setInputBufferSize((int) inputBufferSize.toBytes());
         return httpConnectionFactory;
     }
@@ -686,6 +694,7 @@ public class HttpConnectorFactory implements ConnectorFactory {
         httpConfig.setMinRequestDataRate(minRequestDataPerSecond.toBytes());
         httpConfig.setRequestCookieCompliance(requestCookieCompliance);
         httpConfig.setResponseCookieCompliance(responseCookieCompliance);
+        httpConfig.setHttpCompliance(httpCompliance);
 
         if (useForwardedHeaders) {
             httpConfig.addCustomizer(new ForwardedRequestCustomizer());

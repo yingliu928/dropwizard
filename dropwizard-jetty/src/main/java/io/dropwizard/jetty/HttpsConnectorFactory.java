@@ -1,7 +1,7 @@
 package io.dropwizard.jetty;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jetty9.InstrumentedConnectionFactory;
+import io.dropwizard.metrics.jetty10.InstrumentedConnectionFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.dropwizard.util.Strings;
@@ -599,8 +599,8 @@ public class HttpsConnectorFactory extends HttpConnectorFactory {
 
         final HttpConnectionFactory httpConnectionFactory = buildHttpConnectionFactory(httpConfig);
 
-        final SslContextFactory sslContextFactory = configureSslContextFactory(new SslContextFactory.Server());
-        sslContextFactory.addLifeCycleListener(logSslInfoOnStart(sslContextFactory));
+        final SslContextFactory.Server sslContextFactory = configureSslContextFactory(new SslContextFactory.Server());
+        sslContextFactory.addEventListener(logSslInfoOnStart(sslContextFactory));
 
         server.addBean(sslContextFactory);
         server.addBean(new SslReload(sslContextFactory, this::configureSslContextFactory));
@@ -711,7 +711,7 @@ public class HttpsConnectorFactory extends HttpConnectorFactory {
         }
     }
 
-    protected SslContextFactory configureSslContextFactory(SslContextFactory factory) {
+    protected <T extends SslContextFactory> T configureSslContextFactory(T factory) {
         if (keyStorePath != null) {
             factory.setKeyStorePath(keyStorePath);
         }

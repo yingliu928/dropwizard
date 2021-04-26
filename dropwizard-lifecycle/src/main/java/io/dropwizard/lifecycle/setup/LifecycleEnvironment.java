@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
@@ -21,7 +22,7 @@ public class LifecycleEnvironment {
     private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleEnvironment.class);
 
     private final List<LifeCycle> managedObjects;
-    private final List<LifeCycle.Listener> lifecycleListeners;
+    private final List<EventListener> lifecycleListeners;
     private final MetricRegistry metricRegistry;
 
     public LifecycleEnvironment(MetricRegistry metricRegistry) {
@@ -78,23 +79,31 @@ public class LifecycleEnvironment {
         lifecycleListeners.add(new ServerListener(listener));
     }
 
+    /**
+     * @deprecated Use {@link #addEventListener(EventListener)} instead
+     */
+    @Deprecated
     public void addLifeCycleListener(LifeCycle.Listener listener) {
+        addEventListener(listener);
+    }
+
+    public void addEventListener(EventListener listener) {
         lifecycleListeners.add(listener);
     }
 
     public void attach(ContainerLifeCycle container) {
+        for (EventListener listener : lifecycleListeners) {
+            container.addEventListener(listener);
+        }
         for (LifeCycle object : managedObjects) {
             container.addBean(object);
         }
-        container.addLifeCycleListener(new AbstractLifeCycle.AbstractLifeCycleListener() {
+        container.addEventListener(new AbstractLifeCycle.AbstractLifeCycleListener() {
             @Override
             public void lifeCycleStarting(LifeCycle event) {
                 LOGGER.debug("managed objects = {}", managedObjects);
             }
         });
-        for (LifeCycle.Listener listener : lifecycleListeners) {
-            container.addLifeCycleListener(listener);
-        }
     }
 
     /**
@@ -115,6 +124,34 @@ public class LifecycleEnvironment {
         public void lifeCycleStarted(LifeCycle event) {
             if (event instanceof Server) {
                 listener.serverStarted((Server) event);
+            }
+        }
+
+        @Override
+        public void lifeCycleFailure(LifeCycle event, Throwable cause) {
+            if (event instanceof Server) {
+                listener.serverFailure((Server) event, cause);
+            }
+        }
+
+        @Override
+        public void lifeCycleStarting(LifeCycle event) {
+            if (event instanceof Server) {
+                listener.serverStarting((Server) event);
+            }
+        }
+
+        @Override
+        public void lifeCycleStopping(LifeCycle event) {
+            if (event instanceof Server) {
+                listener.serverStopping((Server) event);
+            }
+        }
+
+        @Override
+        public void lifeCycleStopped(LifeCycle event) {
+            if (event instanceof Server) {
+                listener.serverStopped((Server) event);
             }
         }
     }

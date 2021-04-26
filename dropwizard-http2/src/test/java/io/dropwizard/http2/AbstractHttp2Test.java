@@ -5,10 +5,12 @@ import io.dropwizard.testing.ResourceHelpers;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
+import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,10 +40,14 @@ class AbstractHttp2Test {
         sslContextFactory.setTrustStorePassword("http2_client");
         sslContextFactory.start();
 
-        http1Client = new HttpClient(sslContextFactory);
+        final ClientConnector http1ClientConnector = new ClientConnector();
+        http1ClientConnector.setSslContextFactory(sslContextFactory);
+        http1Client = new HttpClient(new HttpClientTransportOverHTTP(http1ClientConnector));
         http1Client.start();
 
-        http2Client = new HttpClient(new HttpClientTransportOverHTTP2(new HTTP2Client()), sslContextFactory);
+        final ClientConnector http2ClientConnector = new ClientConnector();
+        http2ClientConnector.setSslContextFactory(sslContextFactory);
+        http2Client = new HttpClient(new HttpClientTransportOverHTTP2(new HTTP2Client(http2ClientConnector)));
         http2Client.start();
 
     }
